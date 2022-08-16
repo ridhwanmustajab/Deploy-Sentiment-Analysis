@@ -13,6 +13,7 @@ model = joblib.load("modelsvm.pkl")
 listkata = joblib.load("listkata.pkl")
 stopword_dict = pd.read_csv('dict_stopword.csv', header =None)
 stopword_dict = stopword_dict.rename(columns={0: 'stopword'})
+slangword = pd.read_csv('slangword.csv', sep=';')
 
 def cleansing(text):
     remove = string.punctuation
@@ -23,6 +24,10 @@ def cleansing(text):
     text = re.sub(r'[0-9]+', '', text)   
     text = text.replace('\n', ' ')
     return text
+
+slangword_map = dict(zip(slangword['slang'], slangword['formal']))
+def normalize(text):
+   return ' '.join([slangword_map[word] if word in slangword_map else word for word in text.split(' ')])
 
 def remove_stopword(text):
     text = ' '.join([' ' if word in stopword_dict.stopword.values else word for word in text.split(' ')])
@@ -36,6 +41,7 @@ def stemming(text):
 def preprocess(text):
     text = text.lower()
     text = cleansing(text)
+    text = normalize(text)
     text = remove_stopword(text)
     text = stemming(text)
     return text
